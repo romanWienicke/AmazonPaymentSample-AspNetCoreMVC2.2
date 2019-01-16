@@ -1,0 +1,112 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@inject IOptions<AmazonPayCredentials> AmazonPayCredentials
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Amazon Pay aspnet core 2.2 SDK Sample: One-Time Payment Checkout</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a id="Logout" href="#">Logout and Start Over</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="jumbotron jumbotroncolor" style="padding-top:25px;" id="api-content">
+    <div id="section-content">
+
+        <h2>Test Cart</h2>
+        <p style="margin-top:20px;">
+            This is a test cart to show which calls need to
+            be made to allow a buyer to make a purchase. You will need a <strong>test account</strong>
+            before proceeding. Test accounts can be created in Seller Central.
+        </p>
+        <p>Note: This is a <strong>sandbox</strong> transaction. Your <strong>payment method</strong> will <strong>not be charged</strong>.</p>
+
+        <div class="panel panel-default" style="margin-top:25px;">
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Description</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="btn btn-default"><img class="media-object" src="images/icon.png" alt="PHP SDK"></div></td>
+                                <td>
+                                    <div>
+                                        <strong>
+                                            Amazon Pay PHP Software Development Kit
+                                        </strong>
+                                    </div>
+                                    <div>
+                                        <em>
+                                            This SDK will allow you to integrate with Amazon Pay seamlessly and effortlessly.<br>
+                                            For more information visit the <a target='_new' href='https://github.com/amzn/amazon-pay-sdk-php'>Amazon Pay PHP SDK GitHub</a>.
+                                        </em>
+                                    </div>
+                                </td>
+                                <td class="text-center">1</td>
+                                <td class="text-center">19.95</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center" style="margin-top:40px;" id="AmazonPayButton"></div>
+
+    </div>
+</div>
+
+
+
+@section scripts {
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script type='text/javascript'>
+        window.onAmazonLoginReady = function () {
+            try {
+                amazon.Login.setClientId("@AmazonPayCredentials.Value.Client_Id");
+                amazon.Login.setUseCookie(true);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        window.onAmazonPaymentsReady = function () {
+            var authRequest;
+            OffAmazonPayments.Button("AmazonPayButton", "@AmazonPayCredentials.Value.Merchant_Id", {
+                type: "PwA",       // PwA, Pay, A, LwA, Login
+                color: "DarkGray", // Gold, LightGray, DarkGray
+                size: "medium",    // small, medium, large, x-large
+                language: "de-DE", // for Europe/UK regions only: en-GB, de-DE, fr-FR, it-IT, es-ES
+                authorization: function () {
+                    loginOptions = { scope: "profile postal_code payments:widget payments:shipping_address", popup: true };
+                    authRequest = amazon.Login.authorize(loginOptions, "/home/SetPaymentDetails");
+                },
+                onError: function (error) {
+                    console.log(error.getErrorMessage());
+                }
+            });
+
+            document.getElementById('Logout').onclick = function () {
+                amazon.Login.logout();
+                document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                window.location = '/';
+            };
+
+        };
+    </script>
+    @await Html.PartialAsync("_AmazonPaymentScriptPartial")
+
+}

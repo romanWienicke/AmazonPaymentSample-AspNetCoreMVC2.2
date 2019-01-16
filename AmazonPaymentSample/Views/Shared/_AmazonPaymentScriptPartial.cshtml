@@ -1,0 +1,32 @@
+﻿@inject IOptions<AmazonPayCredentials> AmazonPayCredentials
+
+
+
+@{
+    var sandbox = "";
+    var url = "";
+    var credentials = AmazonPayCredentials.Value ?? new AmazonPayCredentials();
+
+
+    if (credentials.UseSandbox)
+    {
+        sandbox = "sandbox/";
+    }
+
+    switch (credentials.Region.ToLower())
+    {
+        case "us":
+            url = $"https://static-na.payments-amazon.com/OffAmazonPayments/us/{sandbox}js/Widgets.js";
+            break;
+        case "uk":
+            url = $"https://static-eu.payments-amazon.com/OffAmazonPayments/gbp/{sandbox}lpa/js/Widgets.js";
+            break;
+        case "jp":
+            url = $"https://static-fe.payments-amazon.com/OffAmazonPayments/jp/{sandbox}lpa/js/Widgets.js";
+            break;
+        default:
+            url = $"https://static-eu.payments-amazon.com/OffAmazonPayments/eur/{sandbox}lpa/js/Widgets.js";
+            break;
+    }
+}
+<script async="async" type='text/javascript' src="@url"></script>
