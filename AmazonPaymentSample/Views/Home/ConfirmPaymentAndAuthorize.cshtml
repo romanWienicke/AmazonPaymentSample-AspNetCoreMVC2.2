@@ -57,7 +57,7 @@
                 $('.start-over').on('click', function () {
                     amazon.Login.logout();
                     document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-                    window.location = 'index.php';
+                    window.location = '/';
                 });
             });
         };
@@ -66,37 +66,37 @@
         var confirmResponse;
         $.post("/home/ConfirmAndAuthorize", {}).done(function (data) {
             try {
-                debugger;
-                var obj = jQuery.parseJSON(data);
-                $.each(obj, function (key, value) {
-                    if (key == 'confirm') {
-                        confirmResponse = value;
-                        var str = JSON.stringify(value, null, 2);
-                        $("#confirm").html(str);
-                    } else if (key == 'authorize') {
-                        authorizeResponse = value;
-                        var str = JSON.stringify(value, null, 2);
-                        $("#authorize").html(str);
-                    }
-                });
+                console.log(data);
+                
+                if (data.ConfirmResponse) {
+                    var str = JSON.stringify(data.ConfirmResponse, null, 2);
+                    console.log("confirm" + str);
 
+                    $("#confirm").html(str);
+                } else if (data.AuthorizeResponse) {
+                    var str = JSON.stringify(data.AuthorizeResponse, null, 2);
+                    console.log("authorize" + str);
+                    $("#authorize").html(str);
+                }
+                
                 // Normally, you would do these decline checks on the back-end instead of in the browser
 
-                if (confirmResponse) {
-                    if (confirmResponse.Error) {
+                if (data.ConfirmResponse) {
+                    console.log(data.ConfirmResponse);
+                    if (data.ConfirmResponse.Error) {
                         $("#result").html("<font color='red'><strong>Confirm API call failed (see reason above)</strong></font>");
                     }
                 }
 
-                if (authorizeResponse) {
-                    if (authorizeResponse.AuthorizeResult.AuthorizationDetails.AuthorizationStatus.State === "Declined") {
+                if (data.AuthorizeResponse) {
+                    if (data.AuthorizeResponse.AuthorizeResult.AuthorizationDetails.AuthorizationStatus.State === "Declined") {
                         $("#result").html("<font color='red'><strong>The authorization was Declined with Reason Code "
-                            + authorizeResponse.AuthorizeResult.AuthorizationDetails.AuthorizationStatus.ReasonCode + "</strong></font>");
+                            + data.AuthorizeRespons.AuthorizeResult.AuthorizationDetails.AuthorizationStatus.ReasonCode + "</strong></font>");
                     }
                 }
 
             } catch (err) {
-                $("#confirm").html(data);
+                $("#confirm").html(JSON.stringify(data, null, 2));
                 console.log(data);
                 console.log(err);
             }

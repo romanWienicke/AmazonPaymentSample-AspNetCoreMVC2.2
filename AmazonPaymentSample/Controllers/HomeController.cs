@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using AmazonPay.StandardPaymentRequests;
 using AmazonPay.Responses;
 using System.Globalization;
+using Newtonsoft.Json;
 
 namespace AmazonPaymentSample.Controllers
 {
@@ -25,7 +26,7 @@ namespace AmazonPaymentSample.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         private IList<string> amazonCaptureIdList = new List<string>();
-       
+
 
         public HomeController(IOptions<AmazonPayCredentials> amazonOptions, IHttpContextAccessor httpContextAccessor)
         {
@@ -71,7 +72,7 @@ namespace AmazonPaymentSample.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetDetails(string orderReferenceId, string amount, string addressConsentToken=null )
+        public IActionResult GetDetails(string orderReferenceId, string amount, string addressConsentToken = null)
         {
             var currencyCode = (Regions.currencyCode)Enum.Parse(typeof(Regions.currencyCode), _config.CurrencyCode);
             var amountValue = decimal.Parse(amount, CultureInfo.InvariantCulture);
@@ -104,7 +105,7 @@ namespace AmazonPaymentSample.Controllers
                 OrderReferenceDetailsResponse getOrderReferenceDetailsResponse = AmazonClient.GetOrderReferenceDetails(getRequestParameters);
                 response = getOrderReferenceDetailsResponse.GetJson();
             }
-            
+
             return Json(response);
         }
         public IActionResult ConfirmPaymentAndAuthorize()
@@ -121,6 +122,8 @@ namespace AmazonPaymentSample.Controllers
 
             var getRequestParameters = new ConfirmOrderReferenceRequest();
             getRequestParameters.WithAmazonOrderReferenceId(orderReferenceId);
+
+
 
             var response = (IResponse)AmazonClient.ConfirmOrderReference(getRequestParameters);
 
@@ -139,8 +142,14 @@ namespace AmazonPaymentSample.Controllers
                     .WithSellerAuthorizationNote("Note");
 
                 response = AmazonClient.Authorize(authRequestParameters);
+
+                var data = AmazonClient.GetOrderReferenceDetails(
+                    new GetOrderReferenceDetailsRequest ()
+                    .WithAmazonOrderReferenceId(orderReferenceId)
+                    );
+
             }
-            return Json(response.GetJson());
+            return Json(JsonConvert.DeserializeObject<dynamic>(response.GetJson()));
         }
 
 

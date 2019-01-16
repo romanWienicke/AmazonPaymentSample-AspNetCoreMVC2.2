@@ -27,7 +27,7 @@
             The 'access_token' should be saved in order to obtain line one and
             two of the shipping address the buyer selects in the address widget.
         </p>
-        <p><pre><?php echo $_GET['access_token'];?></pre></p>
+        <p><pre>@Context.Request.Query["access_token"]</pre></p>
         <p>
             This access_token is passed to the <em>GetOrderReferenceDetails</em> API
             call to retrieve information about the Order Reference ID that is generated
@@ -103,6 +103,7 @@
                             amount: "19.95"
                         }).done(function (data) {
                             try {
+                                console.log(data);
                                 JSON.parse(data);
                             } catch (err) {
                                 debugger;
@@ -111,6 +112,7 @@
                         });
                     },
                     onAddressSelect: function (orderReference) {
+                        console.log("address selected");
                         // If you want to prohibit shipping to certain countries, this is where you would handle that
                     },
                     design: {
@@ -125,6 +127,7 @@
                 var walletWidget = new OffAmazonPayments.Widgets.Wallet({
                     sellerId: "@AmazonPayCredentials.Value.Merchant_Id",
                     onPaymentSelect: function (orderReference) {
+                        console.log("payment selected");
                     },
                     design: {
                         designMode: 'responsive'
@@ -134,7 +137,7 @@
                         alert("Wallet Widget error: " + error.getErrorCode() + ' - ' + error.getErrorMessage());
                     }
                 });
-                walletWidget.setPresentmentCurrency("EUR");
+                walletWidget.setPresentmentCurrency("@AmazonPayCredentials.Value.CurrencyCode");
                 walletWidget.bind("walletWidgetDiv");
 
 
@@ -142,7 +145,7 @@
                     $('.start-over').on('click', function() {
                         amazon.Login.logout();
                         document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-                        window.location = 'index';
+                        window.location = '/';
                     });
                     $('#place-order').on('click', function() {
                         $(this).hide();
