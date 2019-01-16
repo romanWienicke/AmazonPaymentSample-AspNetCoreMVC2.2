@@ -67,14 +67,17 @@
         $.post("/home/ConfirmAndAuthorize", {}).done(function (data) {
             try {
                 console.log(data);
-                
+                debugger;
                 if (data.ConfirmResponse) {
                     var str = JSON.stringify(data.ConfirmResponse, null, 2);
                     console.log("confirm" + str);
 
                     $("#confirm").html(str);
                 } else if (data.AuthorizeResponse) {
+                    
                     var str = JSON.stringify(data.AuthorizeResponse, null, 2);
+
+
                     console.log("authorize" + str);
                     $("#authorize").html(str);
                 }
@@ -96,7 +99,7 @@
                 }
 
             } catch (err) {
-                $("#confirm").html(JSON.stringify(data, null, 2));
+                $("#confirm").html(data);
                 console.log(data);
                 console.log(err);
             }

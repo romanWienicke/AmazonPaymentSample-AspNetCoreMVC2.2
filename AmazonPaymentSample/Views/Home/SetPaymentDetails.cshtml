@@ -76,7 +76,19 @@
 @section scripts {
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script type='text/javascript'>
-            window.onAmazonLoginReady = function () {
+        // get access token
+        function getURLParameter(name, source) {
+            return decodeURIComponent((new RegExp('[?|&amp;|#]' + name + '=' +
+                '([^&;]+?)(&|#|;|$)').exec(source) || [, ""])[1].replace(/\+/g, '%20')) || null;
+        }
+
+        var accessToken = getURLParameter("access_token", location.hash);
+        if (typeof accessToken === 'string' && accessToken.match(/^Atza/)) {
+            document.cookie = "amazon_Login_accessToken=" + accessToken + ";path=/;secure";
+        }
+
+
+        window.onAmazonLoginReady = function () {
                 try {
                     amazon.Login.setClientId('@AmazonPayCredentials.Value.Client_Id');
                     amazon.Login.setUseCookie(true);

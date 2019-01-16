@@ -13,6 +13,7 @@ using AmazonPay.StandardPaymentRequests;
 using AmazonPay.Responses;
 using System.Globalization;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace AmazonPaymentSample.Controllers
 {
@@ -142,31 +143,37 @@ namespace AmazonPaymentSample.Controllers
                     .WithSellerAuthorizationNote("Note");
 
                 response = AmazonClient.Authorize(authRequestParameters);
+                var orderDetails = AmazonClient.GetOrderReferenceDetails(new GetOrderReferenceDetailsRequest()
+                        .WithAmazonOrderReferenceId(orderReferenceId));
 
-                var data = AmazonClient.GetOrderReferenceDetails(
-                    new GetOrderReferenceDetailsRequest ()
-                    .WithAmazonOrderReferenceId(orderReferenceId)
-                    );
+                var jsonString = new StringBuilder(response.GetJson());
+                //jsonString.AppendLine(orderDetails.GetJson());
+                //jsonString.AppendLine("}");
 
+
+                var data = JsonConvert.DeserializeObject<dynamic>(jsonString.ToString());
+                
+                return Json(data);
             }
+        
             return Json(JsonConvert.DeserializeObject<dynamic>(response.GetJson()));
         }
 
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public string GenerateRandomUniqueString()
-        {
-            Guid g = Guid.NewGuid();
-            var GuidString = Convert.ToBase64String(g.ToByteArray());
-            GuidString = GuidString.Replace("=", "");
-            GuidString = GuidString.Replace("+", "");
-            GuidString = GuidString.Replace("/", "");
-            return GuidString;
-        }
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    public string GenerateRandomUniqueString()
+    {
+        Guid g = Guid.NewGuid();
+        var GuidString = Convert.ToBase64String(g.ToByteArray());
+        GuidString = GuidString.Replace("=", "");
+        GuidString = GuidString.Replace("+", "");
+        GuidString = GuidString.Replace("/", "");
+        return GuidString;
+    }
+}
 }
